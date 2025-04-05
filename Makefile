@@ -1,3 +1,12 @@
+docker-build:
+	DOCKER_BUILDKIT=1 docker compose build --progress=plain --no-cache
+
+docker-up:
+	docker compose up -d
+
+docker-down:
+	docker compose down
+
 format:
 	cargo fmt
 

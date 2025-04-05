@@ -1,0 +1,11 @@
+services:
+  rs-jobs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    hostname: rs-jobs
+    container_name: rs-jobs
+    image: rs-jobs:latest
+    environment:
+      - RUST_BACKTRACE=1
+      - RUST_LOG=debug
