@@ -1,0 +1,13 @@
+[package]
+name = "rs-bot"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.97"
+tokio = { version = "1.44.1", features = ["rt", "rt-multi-thread", "macros"] }
+sled = "0.34.7"
+scraper = "0.23.1"
+fantoccini = "0.21.5"
+reqwest = "0.12.15"
+urlencoding = "2.1.3"
