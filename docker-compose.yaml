@@ -6,11 +6,13 @@ services:
     hostname: rs-jobs
     container_name: rs-jobs
     image: rs-jobs:latest
+    restart: always
     environment:
       RUST_BACKTRACE: 1
       RUST_LOG: debug
       BOT_TOKEN: ${BOT_TOKEN}
       CHAT_ID: ${CHAT_ID}
+      SLEEP_SEC: 1800 # 30min * 60sec
     volumes:
       - rs-jobs-data:/rust_jobs
 

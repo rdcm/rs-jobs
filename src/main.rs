@@ -6,7 +6,16 @@ use urlencoding::encode;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let timeout_sec = 10;
+    let open_page_timeout_sec = 10;
+    let sleep_duration = std::env::var("SLEEP_SEC")?.parse::<u64>()?;
+
+    loop {
+        poll_site(open_page_timeout_sec).await?;
+        sleep(Duration::from_secs(sleep_duration)).await;
+    }
+}
+
+async fn poll_site(timeout_sec: u64) -> Result<()> {
     let rust_jobs_url = "https://rustjobs.dev";
     let raw_html = open_page(rust_jobs_url, "http://localhost:9515", timeout_sec).await?;
     let job_links = get_links(&rust_jobs_url, &raw_html)?;
@@ -30,7 +39,7 @@ async fn send_message(token: &str, chat_id: &str, text: &str) -> Result<()> {
     let message = format!("{text} \n\n#rust_jobs");
     let encoded_message = encode(&message);
     let url = format!(
-        "https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}",
+        "https://api.telegram.org/bot{}/sendMessage?chat_id={}&text={}&silent=true",
         token, chat_id, encoded_message
     );
 
