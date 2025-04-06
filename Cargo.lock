@@ -1219,6 +1219,7 @@ dependencies = [
  "fantoccini",
  "reqwest",
  "scraper",
+ "serde_json",
  "sled",
  "tokio",
  "urlencoding",

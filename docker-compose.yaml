@@ -7,5 +7,12 @@ services:
     container_name: rs-jobs
     image: rs-jobs:latest
     environment:
-      - RUST_BACKTRACE=1
-      - RUST_LOG=debug
+      RUST_BACKTRACE: 1
+      RUST_LOG: debug
+      BOT_TOKEN: ${BOT_TOKEN}
+      CHAT_ID: ${CHAT_ID}
+    volumes:
+      - rs-jobs-data:/rust_jobs
+
+volumes:
+  rs-jobs-data:

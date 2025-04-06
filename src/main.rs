@@ -40,7 +40,18 @@ async fn send_message(token: &str, chat_id: &str, text: &str) -> Result<()> {
 }
 
 async fn open_page(url: &str, browser_url: &str, timeout: u64) -> Result<String> {
+    let mut map = serde_json::Map::new();
+    let json = serde_json::json!({
+            "args": [
+                "--headless",
+                "--no-sandbox",
+                "--disable-dev-shm-usage"
+            ]
+        });
+    map.insert("goog:chromeOptions".to_string(), json);
+
     let c = fantoccini::ClientBuilder::native()
+        .capabilities(map)
         .connect(browser_url)
         .await?;
     c.goto(url).await?;

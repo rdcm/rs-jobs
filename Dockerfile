@@ -25,4 +25,4 @@ RUN apt-get update && apt-get install -y \
 RUN chromium --version && chromedriver --version
 
 COPY --from=build /rs-bot /rs-bot
-CMD sh -c "chromedriver --port=9515 --verbose --no-sandbox --headless --disable-dev-shm-usage & /rs-bot"
+CMD sh -c "chromedriver --port=9515 --no-sandbox & /rs-bot"

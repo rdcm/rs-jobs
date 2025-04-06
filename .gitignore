@@ -3,3 +3,4 @@ rust_jobs
 target
 dist
 drivers
+.env
