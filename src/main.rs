@@ -1,11 +1,13 @@
 use anyhow::Result;
-use scraper::{Html, Selector};
+use dotenvy::dotenv;
+use fantoccini::Locator;
 use std::time::Duration;
 use tokio::time::sleep;
 use urlencoding::encode;
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    _ = dotenv();
     let open_page_timeout_sec = 10;
     let sleep_duration = std::env::var("SLEEP_SEC")?.parse::<u64>()?;
 
@@ -17,8 +19,7 @@ async fn main() -> Result<()> {
 
 async fn poll_site(timeout_sec: u64) -> Result<()> {
     let rust_jobs_url = "https://rustjobs.dev";
-    let raw_html = open_page(rust_jobs_url, "http://localhost:9515", timeout_sec).await?;
-    let job_links = get_links(&rust_jobs_url, &raw_html)?;
+    let job_links = open_page(rust_jobs_url, "http://localhost:9515", timeout_sec).await?;
     let inserted_links = persist_links(&job_links)?;
 
     for inserted_link in inserted_links {
@@ -48,7 +49,7 @@ async fn send_message(token: &str, chat_id: &str, text: &str) -> Result<()> {
     Ok(())
 }
 
-async fn open_page(url: &str, browser_url: &str, timeout: u64) -> Result<String> {
+async fn open_page(url: &str, browser_url: &str, timeout: u64) -> Result<Vec<String>> {
     let mut map = serde_json::Map::new();
     let json = serde_json::json!({
         "args": [
@@ -59,30 +60,28 @@ async fn open_page(url: &str, browser_url: &str, timeout: u64) -> Result<String>
     });
     map.insert("goog:chromeOptions".to_string(), json);
 
-    let c = fantoccini::ClientBuilder::native()
+    let client = fantoccini::ClientBuilder::native()
         .capabilities(map)
         .connect(browser_url)
         .await?;
-    c.goto(url).await?;
+
+    client.goto(url).await?;
     sleep(Duration::from_secs(timeout)).await;
-    let page_html = c.source().await?;
 
-    c.close().await?;
+    let links = client
+        .find_all(Locator::Css(r#"a[eventcategory="Featured Job Title"]"#))
+        .await?;
 
-    Ok(page_html)
-}
-
-fn get_links(base_url: &str, page_html: &str) -> Result<Vec<String>> {
-    let mut links = Vec::new();
-    let document = Html::parse_document(&page_html);
-    let selector = Selector::parse(r#"a[eventcategory="Featured Job Title"]"#)
-        .expect("failed to create selector");
-    for a in document.select(&selector) {
-        let href = a.value().attr("href").unwrap_or("#");
-        links.push(format!("{base_url}{href}"));
+    let mut result = Vec::new();
+    for link in links {
+        if let Some(href) = link.attr("href").await? {
+            result.push(format!("{url}{href}"));
+        }
     }
 
-    Ok(links)
+    client.close().await?;
+
+    Ok(result)
 }
 
 fn persist_links(links: &Vec<String>) -> Result<Vec<String>> {
